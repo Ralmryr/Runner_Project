@@ -23,6 +23,3 @@ public class Main extends Application{
         // write your code here
     }
 }
-
-
-// bgleft.setViewPort(camera.getX()%spriteBg.getWidth));

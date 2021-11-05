@@ -3,10 +3,11 @@ public class Hero extends AnimatedThing{
     private double[] prevState = {0, 0, 0, 0, 0, 0};
     private double gravity;
     private double invincibility = 2.5E8;
+    private double prevTime;
 
     public Hero(double x, double y){
         super("heros.png",
-                0.05,
+                0.1,
                 6,
                 100,
                 80,
@@ -14,29 +15,33 @@ public class Hero extends AnimatedThing{
                 60,
                 x,
                 y);
-        this.prevState[0] = super.getPosX();
-        this.prevState[1] = 500;
-        this.prevState[2] = super.getPosY();
+        this.prevState[X] = super.getPosX();
+        this.prevState[VELOCX] = 500;
+        this.prevState[Y] = super.getPosY();
         this.gravity = 3000;
     }
 
     public void update(long time){
-        double accelX = prevState[4];
-        double accelY = prevState[5];
-        double velocX = prevState[1]+super.getDurationBetweenFrames()*accelX;
-        double velocY = prevState[3]+super.getDurationBetweenFrames()*accelY;
-        double posX = prevState[0]+super.getDurationBetweenFrames()*velocX;
-        double posY = prevState[2]+super.getDurationBetweenFrames()*velocY;
+        if(prevTime==0) prevTime = time;
+        double timeElapsed = 1e-9*(time-prevTime);
+        double accelX = prevState[ACCELX];
+        double accelY = prevState[ACCELY];
+        double velocX = prevState[VELOCX]+timeElapsed*accelX;
+        double velocY = prevState[VELOCY]+timeElapsed*accelY;
+        double posX = prevState[X]+timeElapsed*velocX;
+        double posY = prevState[Y]+timeElapsed*velocY;
+        prevTime = time;
+
         if(posY>250){
             posY=250;
             velocY = 0;
         }
-        prevState[0] = posX;
-        prevState[1] = velocX;
-        prevState[2] = posY;
-        prevState[3] = velocY;
-        prevState[4] = 10;
-        prevState[5] = this.gravity;
+        prevState[X] = posX;
+        prevState[VELOCX] = velocX;
+        prevState[Y] = posY;
+        prevState[VELOCY] = velocY;
+        prevState[ACCELX] = 10;
+        prevState[ACCELY] = this.gravity;
         super.setPosX(posX);
         super.setPosY(posY);
         if(velocY==0 && posY==250) super.update(time); // Sprite du joueur qui court
@@ -45,7 +50,7 @@ public class Hero extends AnimatedThing{
     }
 
     public void jump(){
-        if(prevState[2]==250) prevState[5] = -gravity*15; // Le heros doit être sur le sol avant de pouvoir sauter
+        if(prevState[Y]==250) prevState[ACCELY] = -gravity*15; // Le heros doit être sur le sol avant de pouvoir sauter
     }
 
     public void subInvincibility(double time){

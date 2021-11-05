@@ -13,6 +13,13 @@ public abstract class AnimatedThing{
     private int offsetBetweenFramesY;
     private ImageView sprite;
 
+    protected static final int X = 0;
+    protected static final int Y = 1;
+    protected static final int VELOCX = 2;
+    protected static final int VELOCY = 3;
+    protected static final int ACCELX = 4;
+    protected static final int ACCELY = 5;
+
     public AnimatedThing(String filePath, double durationBetweenFrames, int animationMaxIndex, int spriteHeight, int spriteWidth, int offsetBetweenFramesX, int offsetBetweenFramesY, double x, double y){
         sprite = new ImageView(filePath);
         this.posX = x;

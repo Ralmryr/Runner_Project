@@ -5,7 +5,7 @@ public class Camera {
     private double m;
     private double f;
     private double[] prevState = {0, 0, 0, 0};
-    private double timeBetweenUpdates;
+    private long prevTime;
 
     public Camera(int x, int y){
         this.x = x;
@@ -15,7 +15,6 @@ public class Camera {
         this.f = 20;
         this.m = 1;
         this.k = (f*f)/4; // Pour atteindre le régime critique du ressort
-        timeBetweenUpdates = 0.016;
     }
 
     @Override
@@ -23,13 +22,17 @@ public class Camera {
         return(this.x+","+this.y);
     }
 
-    public void update(Hero hero){
+    public void update(Hero hero, long time){
+        if(prevTime==0) prevTime = time;
+        double timeElapsed = 1e-9*(time - prevTime);
         double accelX = (k/m)*(hero.getPosX()-100-prevState[0])-(f/m)*prevState[1];
         double accelY = (k/m)*(hero.getPosY()-150-prevState[2])-(f/m)*prevState[3];
-        double velocX = prevState[1] + accelX*timeBetweenUpdates;
-        double velocY = prevState[3] + accelY*timeBetweenUpdates;
-        double posX = prevState[0] + velocX*timeBetweenUpdates;
-        double posY = prevState[2] + velocY*timeBetweenUpdates;
+        double velocX = prevState[1] + accelX*timeElapsed;
+        double velocY = prevState[3] + accelY*timeElapsed;
+        double posX = prevState[0] + velocX*timeElapsed;
+        double posY = prevState[2] + velocY*timeElapsed;
+        prevTime = time;
+
         prevState[0] = posX;
         prevState[1] = velocX;
         prevState[2] = posY;
@@ -44,9 +47,5 @@ public class Camera {
 
     public double getY() {
         return y;
-    }
-
-    public double getTimeBetweenUpdates() {
-        return timeBetweenUpdates;
     }
 }

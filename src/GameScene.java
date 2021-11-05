@@ -40,7 +40,7 @@ public class GameScene extends Scene {
             public void handle(long time){
                 if(time-prevTimeUpdate>timeBetweenUpdatesNs){
                     hero.update(time);
-                    camera.update(hero);
+                    camera.update(hero, time);
                     for (Foe foe : listOfFoes) {
                         foe.update(time);
                         if(hero.isInvincible()) hero.subInvincibility(time-prevTimeUpdate);
