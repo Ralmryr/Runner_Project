@@ -1,9 +1,9 @@
-import javafx.animation.Animation;
 import javafx.animation.AnimationTimer;
-import javafx.geometry.Rectangle2D;
-import javafx.scene.Parent;
+import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.VBox;
 
 import java.util.Random;
 
@@ -15,12 +15,23 @@ public class GameScene extends Scene {
     private StaticThing bgLeft, bgRight;
     private Hero hero;
     private ArrayList<Foe> listOfFoes;
+    private ArrayList<UI> listOfHearts;
+    private UI blackScreen;
     private AnimationTimer timer;
     private long timeBetweenUpdatesNs = (long) 1e9/100;
     private long timeBetweenRenderNs = (long) 1e9/60;
+    private Group root;
 
-    public GameScene(Parent root, double windowWidth, double windowHeight) {
+    private UI rectDeadMenu;
+    private UI restartButton;
+    private UI menuButton;
+
+    private Menu menu;
+
+    public GameScene(Group root, double windowWidth, double windowHeight) {
         super(root, windowWidth, windowHeight);
+
+        this.root = root;
         this.bgLeft = new StaticThing("desert.png", 0, 0);
         this.bgRight = new StaticThing("desert.png", 800, 0);
         this.hero = new Hero(300, 250);
@@ -30,34 +41,79 @@ public class GameScene extends Scene {
         Random rand = new Random();
         for(int i=2;i<500;i++) this.listOfFoes.add(new Foe(1500*i-rand.nextInt(500)-300, 300));
 
-        root.setOnMouseClicked((mouseEvent -> hero.jump()));
+        this.listOfHearts = new ArrayList<>();
+        for(int i=0;i<hero.getNumberOfLives();i++){
+            listOfHearts.add(new UI("heart.png", 800-40*(i+1), 5));
+        }
+
+        blackScreen = new UI("blackScreen.png", 0, 0);
+        blackScreen.getSprite().setOpacity(0.5);
+        blackScreen.hide();
+
+        rectDeadMenu = new UI("", 500, 200, 100, 50);
+        restartButton = new UI("Restart", 200, 50, 200, 150);
+        menuButton = new UI("Menu", 200, 50, 200, 250);
+        rectDeadMenu.hideRect();
+        restartButton.hideRect();
+        menuButton.hideRect();
+
+        menu = new Menu();
+        menu.addTextBox("Hello !");
+        menu.addTextBox("Hello again !");
+
+        addToRoot();
+        root.getChildren().add(menu.getLayout());
+        root.setOnMouseClicked(mouseEvent -> hero.jump());
 
         this.timer = new AnimationTimer()
         {
-            private long prevTimeRender = 0;
-            private long prevTimeUpdate = 0;
+            private long prevTimeRenderNs = 0;
+            private long prevTimeUpdateNs = 0;
 
             public void handle(long time){
-                if(time-prevTimeUpdate>timeBetweenUpdatesNs){
-                    hero.update(time);
-                    camera.update(hero, time);
-                    for (Foe foe : listOfFoes) {
-                        foe.update(time);
-                        if(hero.isInvincible()) hero.subInvincibility(time-prevTimeUpdate);
-                        else if (hero.getHitBox().intersects(foe.getHitBox())){
-                            System.out.println("Collision !");
-                            hero.setInvincibility(5E8);
-                            break;
-                        }
+                if(time - prevTimeUpdateNs > timeBetweenUpdatesNs){
+                    if(!hero.isDead()){
+                        updateScene(time);
+                        if(!hero.isInvincible()) checkCollisions();
                     }
-                    prevTimeUpdate = time;
+                    else{
+                        printMenu();
+                    }
+                    prevTimeUpdateNs = time;
                 }
-                if (time - prevTimeRender > timeBetweenRenderNs) {
+
+                if (time - prevTimeRenderNs > timeBetweenRenderNs) {
                     printScene();
-                    prevTimeRender = time;
+                    prevTimeRenderNs = time;
+                    System.out.println("Hello");
                 }
             }
         };
+    }
+
+    public void addToRoot() {
+        root.getChildren().add(bgLeft.getSprite());
+        root.getChildren().add(bgRight.getSprite());
+        root.getChildren().add(hero.getSprite());
+        listOfFoes.forEach(foe -> root.getChildren().add(foe.getSprite()));
+        listOfHearts.forEach(heart -> root.getChildren().add(heart.getSprite()));
+        root.getChildren().add(blackScreen.getSprite());
+        root.getChildren().add(rectDeadMenu.getRect());
+        root.getChildren().add(rectDeadMenu.getText());
+        root.getChildren().add(menuButton.getRect());
+        root.getChildren().add(menuButton.getText());
+        root.getChildren().add(restartButton.getRect());
+        root.getChildren().add(restartButton.getText());
+    }
+
+    private void checkCollisions(){
+        for (Foe foe : listOfFoes) {
+            if (hero.getHitBox().intersects(foe.getHitBox())){
+                hero.takeDamage();
+                root.getChildren().remove(listOfHearts.get(hero.getNumberOfLives()).getSprite());
+                return;
+            }
+        }
     }
 
     public void printScene(){
@@ -65,6 +121,24 @@ public class GameScene extends Scene {
         bgRight.print(camera);
         hero.print(camera);
         listOfFoes.forEach(foe -> foe.print(camera));
+        listOfHearts.forEach(UI::printSprite);
+        blackScreen.printSprite();
+    }
+
+    public void updateScene(long time){
+        hero.update(time);
+        camera.update(hero, time);
+        listOfFoes.forEach(foe -> foe.update(time));
+    }
+
+    public void printMenu() {
+        blackScreen.show();
+        rectDeadMenu.showRect();
+        menuButton.showRect();
+        restartButton.showRect();
+        rectDeadMenu.printRect();
+        menuButton.printRect();
+        restartButton.printRect();
     }
 
     public void startTimer(){
@@ -73,21 +147,5 @@ public class GameScene extends Scene {
 
     public void stopTimer(){
         this.timer.stop();
-    }
-
-    public ImageView getBgLeft() {
-        return bgLeft.getImage();
-    }
-
-    public ImageView getBgRight() {
-        return bgRight.getImage();
-    }
-
-    public ImageView getHero() {
-        return hero.getSprite();
-    }
-
-    public ArrayList<Foe> getListOfFoes() {
-        return listOfFoes;
     }
 }

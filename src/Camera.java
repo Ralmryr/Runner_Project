@@ -5,13 +5,14 @@ public class Camera {
     private double m;
     private double f;
     private double[] prevState = {0, 0, 0, 0};
-    private long prevTime;
+    private long prevTime = 0;
 
     public Camera(int x, int y){
         this.x = x;
         this.y = y;
 
         prevState[0] = x;
+        prevState[2] = y;
         this.f = 20;
         this.m = 1;
         this.k = (f*f)/4; // Pour atteindre le régime critique du ressort

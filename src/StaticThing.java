@@ -27,7 +27,7 @@ public class StaticThing {
         image.setX(Math.max(0, x - camX % imageWidth));
     }
 
-    public ImageView getImage() {
+    public ImageView getSprite() {
         return image;
     }
 }
