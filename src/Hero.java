@@ -1,9 +1,7 @@
-import java.util.ArrayList;
-
 public class Hero extends AnimatedThing{
 
-    private double[] prevState = {0, 0, 0, 0, 0, 0};
-    private double gravity;
+    private final double[] prevState = {0, 0, 0, 0, 0, 0};
+    private final double gravity;
     private double invincibility = 0;
     private double prevTime = 0;
     private int numberOfLives = 1;
@@ -65,6 +63,21 @@ public class Hero extends AnimatedThing{
         numberOfLives--;
         invincibility = 1e9;
         prevState[VELOCX] *= 0.8;
+    }
+
+    public void reset(){
+        prevState[X] = 500;
+        prevState[VELOCX] = 500;
+        prevState[Y] = 250;
+        prevState[VELOCY] = 0;
+        prevState[ACCELX] = 10;
+        prevState[ACCELY] = this.gravity;
+        numberOfLives = 1;
+        prevTime = 0;
+    }
+
+    public void updateTime(long time) {
+        prevTime = time;
     }
 
     public boolean isInvincible(){

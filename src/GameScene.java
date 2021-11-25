@@ -1,9 +1,6 @@
 import javafx.animation.AnimationTimer;
 import javafx.scene.Group;
 import javafx.scene.Scene;
-import javafx.scene.image.ImageView;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.VBox;
 
 import java.util.Random;
 
@@ -11,22 +8,20 @@ import java.util.ArrayList;
 
 public class GameScene extends Scene {
 
-    private Camera camera;
-    private StaticThing bgLeft, bgRight;
-    private Hero hero;
-    private ArrayList<Foe> listOfFoes;
-    private ArrayList<UI> listOfHearts;
-    private UI blackScreen;
-    private AnimationTimer timer;
-    private long timeBetweenUpdatesNs = (long) 1e9/100;
-    private long timeBetweenRenderNs = (long) 1e9/60;
-    private Group root;
-
-    private UI rectDeadMenu;
-    private UI restartButton;
-    private UI menuButton;
-
-    private Menu menu;
+    private final Camera camera;
+    private final StaticThing bgLeft, bgRight;
+    private final Hero hero;
+    private final ArrayList<Foe> listOfFoes;
+    private final ArrayList<UI> listOfHearts;
+    private final UI pauseButton;
+    private final UI blackScreen;
+    private final AnimationTimer timer;
+    private final long timeBetweenUpdatesNs = (long) 1e9/100;
+    private final long timeBetweenRenderNs = (long) 1e9/60;
+    private final Group root;
+    private final EndMenu endMenu;
+    private final PauseMenu pauseMenu;
+    private boolean isPaused = false;
 
     public GameScene(Group root, double windowWidth, double windowHeight) {
         super(root, windowWidth, windowHeight);
@@ -35,35 +30,36 @@ public class GameScene extends Scene {
         this.bgLeft = new StaticThing("desert.png", 0, 0);
         this.bgRight = new StaticThing("desert.png", 800, 0);
         this.hero = new Hero(300, 250);
-        this.camera = new Camera(0, 100);
+        this.camera = new Camera(50, 100);
 
         this.listOfFoes = new ArrayList<>();
         Random rand = new Random();
-        for(int i=2;i<500;i++) this.listOfFoes.add(new Foe(1500*i-rand.nextInt(500)-300, 300));
+        for(int i=2;i<100;i++) this.listOfFoes.add(new Foe(1500*i-rand.nextInt(500)-300, 300));
 
         this.listOfHearts = new ArrayList<>();
         for(int i=0;i<hero.getNumberOfLives();i++){
             listOfHearts.add(new UI("heart.png", 800-40*(i+1), 5));
         }
 
+        pauseButton = new UI("pauseButton.png", 10, 10);
+
         blackScreen = new UI("blackScreen.png", 0, 0);
-        blackScreen.getSprite().setOpacity(0.5);
+        blackScreen.getSprite().setOpacity(0.6);
         blackScreen.hide();
 
-        rectDeadMenu = new UI("", 500, 200, 100, 50);
-        restartButton = new UI("Restart", 200, 50, 200, 150);
-        menuButton = new UI("Menu", 200, 50, 200, 250);
-        rectDeadMenu.hideRect();
-        restartButton.hideRect();
-        menuButton.hideRect();
+        endMenu = new EndMenu();
+        endMenu.getLayout().setMouseTransparent(true);
 
-        menu = new Menu();
-        menu.addTextBox("Hello !");
-        menu.addTextBox("Hello again !");
+        pauseMenu = new PauseMenu();
+        pauseMenu.getLayout().setMouseTransparent(true);
 
         addToRoot();
-        root.getChildren().add(menu.getLayout());
         root.setOnMouseClicked(mouseEvent -> hero.jump());
+        pauseButton.getSprite().setOnMouseClicked(mouseEvent -> isPaused = true);
+        pauseMenu.getResumeButton().setOnMouseClicked(mouseEvent -> {
+            toggleMenu(pauseMenu, false);
+            isPaused = false;
+        });
 
         this.timer = new AnimationTimer()
         {
@@ -72,20 +68,21 @@ public class GameScene extends Scene {
 
             public void handle(long time){
                 if(time - prevTimeUpdateNs > timeBetweenUpdatesNs){
-                    if(!hero.isDead()){
+                    if(isPaused){
+                        toggleMenu(pauseMenu, true);
+                        camera.updateTime(time);
+                        hero.updateTime(time);
+                    }
+                    else if(!hero.isDead()){
                         updateScene(time);
                         if(!hero.isInvincible()) checkCollisions();
                     }
-                    else{
-                        printMenu();
-                    }
+                    else toggleMenu(endMenu, true);
                     prevTimeUpdateNs = time;
                 }
-
                 if (time - prevTimeRenderNs > timeBetweenRenderNs) {
                     printScene();
                     prevTimeRenderNs = time;
-                    System.out.println("Hello");
                 }
             }
         };
@@ -97,20 +94,17 @@ public class GameScene extends Scene {
         root.getChildren().add(hero.getSprite());
         listOfFoes.forEach(foe -> root.getChildren().add(foe.getSprite()));
         listOfHearts.forEach(heart -> root.getChildren().add(heart.getSprite()));
+        root.getChildren().add(pauseButton.getSprite());
         root.getChildren().add(blackScreen.getSprite());
-        root.getChildren().add(rectDeadMenu.getRect());
-        root.getChildren().add(rectDeadMenu.getText());
-        root.getChildren().add(menuButton.getRect());
-        root.getChildren().add(menuButton.getText());
-        root.getChildren().add(restartButton.getRect());
-        root.getChildren().add(restartButton.getText());
+        root.getChildren().add(endMenu.getLayout());
+        root.getChildren().add(pauseMenu.getLayout());
     }
 
     private void checkCollisions(){
         for (Foe foe : listOfFoes) {
             if (hero.getHitBox().intersects(foe.getHitBox())){
                 hero.takeDamage();
-                root.getChildren().remove(listOfHearts.get(hero.getNumberOfLives()).getSprite());
+                listOfHearts.get(hero.getNumberOfLives()).hide();
                 return;
             }
         }
@@ -122,7 +116,7 @@ public class GameScene extends Scene {
         hero.print(camera);
         listOfFoes.forEach(foe -> foe.print(camera));
         listOfHearts.forEach(UI::printSprite);
-        blackScreen.printSprite();
+        pauseButton.printSprite();
     }
 
     public void updateScene(long time){
@@ -131,14 +125,25 @@ public class GameScene extends Scene {
         listOfFoes.forEach(foe -> foe.update(time));
     }
 
-    public void printMenu() {
-        blackScreen.show();
-        rectDeadMenu.showRect();
-        menuButton.showRect();
-        restartButton.showRect();
-        rectDeadMenu.printRect();
-        menuButton.printRect();
-        restartButton.printRect();
+    public void toggleMenu(Menu menu, boolean state) {
+        if(state) {
+            blackScreen.show();
+            menu.show();
+            menu.getLayout().setMouseTransparent(false);
+        }
+        else{
+            blackScreen.hide();
+            menu.hide();
+            menu.getLayout().setMouseTransparent(true);
+        }
+    }
+
+    public void resetGame() {
+        stopTimer();
+        hero.reset();
+        camera.reset();
+        listOfHearts.forEach(UI::show);
+        toggleMenu(endMenu, false);
     }
 
     public void startTimer(){
@@ -147,5 +152,9 @@ public class GameScene extends Scene {
 
     public void stopTimer(){
         this.timer.stop();
+    }
+
+    public EndMenu getEndMenu() {
+        return endMenu;
     }
 }

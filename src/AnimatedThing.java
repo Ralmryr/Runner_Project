@@ -1,19 +1,17 @@
 import javafx.geometry.Rectangle2D;
 import javafx.scene.image.ImageView;
 
-import java.util.ArrayList;
-
 public abstract class AnimatedThing{
     private double posX;
     private double posY;
     private int attitude;
-    private double durationBetweenFrames;
-    private int[] animationMaxIndex;
-    private int spriteWidth;
-    private int spriteHeight;
-    private int offsetBetweenFramesX;
-    private int offsetBetweenFramesY;
-    private ImageView sprite;
+    private final double durationBetweenFrames;
+    private final int[] animationMaxIndex;
+    private final int spriteWidth;
+    private final int spriteHeight;
+    private final int offsetBetweenFramesX;
+    private final int offsetBetweenFramesY;
+    private final ImageView sprite;
 
     protected static final int X = 0;
     protected static final int Y = 1;

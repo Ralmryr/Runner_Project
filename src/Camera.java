@@ -1,9 +1,9 @@
 public class Camera {
     private double x;
     private double y;
-    private double k;
-    private double m;
-    private double f;
+    private final double k;
+    private final double m;
+    private final double f;
     private double[] prevState = {0, 0, 0, 0};
     private long prevTime = 0;
 
@@ -40,6 +40,22 @@ public class Camera {
         prevState[3] = velocY;
         this.x = posX;
         this.y = posY;
+    }
+
+    public void reset() {
+        prevState[0] = 0;
+        prevState[1] = 0;
+        prevState[2] = 50;
+        prevState[3] = 0;
+        prevTime = 0;
+    }
+
+    public void updateTime(long time) {
+        prevTime = time;
+    }
+
+    public void incrementX(double value) {
+        x += value;
     }
 
     public double getX() {
