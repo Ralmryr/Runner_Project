@@ -10,6 +10,7 @@ public class Menu{
     public Menu() {
         layout = new StackPane();
         layout.setStyle("-fx-background-color:blue");
+        System.out.println("Hello");
         layout.setPrefSize(500, 100);
         layout.setLayoutX(200);
     }
