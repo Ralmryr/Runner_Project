@@ -1,6 +1,7 @@
 import javafx.animation.AnimationTimer;
 import javafx.scene.Group;
 import javafx.scene.Scene;
+import javafx.scene.input.KeyCode;
 
 import java.util.Random;
 
@@ -54,11 +55,28 @@ public class GameScene extends Scene {
         pauseMenu.getLayout().setMouseTransparent(true);
 
         addToRoot();
-        root.setOnMouseClicked(mouseEvent -> hero.jump());
+        setOnKeyPressed(keyEvent -> {
+            if (keyEvent.getCode() == KeyCode.SPACE) {
+                hero.jump();
+            }
+            if (keyEvent.getCode() == KeyCode.ESCAPE) {
+                isPaused = true;
+            }
+        });
         pauseButton.getSprite().setOnMouseClicked(mouseEvent -> isPaused = true);
         pauseMenu.getResumeButton().setOnMouseClicked(mouseEvent -> {
             toggleMenu(pauseMenu, false);
             isPaused = false;
+        });
+        pauseMenu.getRestartButton().setOnMouseClicked(mouseEvent -> {
+            resetGame();
+            startTimer();
+            toggleMenu(pauseMenu, false);
+            isPaused = false;
+        });
+        endMenu.getRestartButton().setOnMouseClicked(mouseEvent -> {
+            resetGame();
+            startTimer();
         });
 
         this.timer = new AnimationTimer()
@@ -144,6 +162,7 @@ public class GameScene extends Scene {
         camera.reset();
         listOfHearts.forEach(UI::show);
         toggleMenu(endMenu, false);
+        isPaused = false;
     }
 
     public void startTimer(){
@@ -156,5 +175,9 @@ public class GameScene extends Scene {
 
     public EndMenu getEndMenu() {
         return endMenu;
+    }
+
+    public PauseMenu getPauseMenu() {
+        return pauseMenu;
     }
 }

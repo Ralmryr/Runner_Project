@@ -4,7 +4,7 @@ public class Hero extends AnimatedThing{
     private final double gravity;
     private double invincibility = 0;
     private double prevTime = 0;
-    private int numberOfLives = 1;
+    private int numberOfLives = 3;
 
     public Hero(double x, double y){
         super("heros.png",
@@ -72,7 +72,7 @@ public class Hero extends AnimatedThing{
         prevState[VELOCY] = 0;
         prevState[ACCELX] = 10;
         prevState[ACCELY] = this.gravity;
-        numberOfLives = 1;
+        numberOfLives = 3;
         prevTime = 0;
     }
 

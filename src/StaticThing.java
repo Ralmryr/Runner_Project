@@ -3,8 +3,9 @@ import javafx.scene.image.ImageView;
 
 public class StaticThing {
 
-    double x, y;
-    ImageView image;
+    final double x;
+    final double y;
+    final ImageView image;
 
     public StaticThing(String filePath, double x, double y) {
         image = new ImageView(filePath);

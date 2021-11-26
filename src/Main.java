@@ -1,6 +1,5 @@
 import javafx.application.Application;
 import javafx.scene.Group;
-import javafx.scene.image.ImageView;
 import javafx.stage.Stage;
 
 public class Main extends Application{
@@ -19,9 +18,10 @@ public class Main extends Application{
             primaryStage.setScene(gameScene);
         });
         startScene.getStartMenu().getQuitButton().setOnMouseClicked(mouseEvent -> primaryStage.close());
-        gameScene.getEndMenu().getRestartButton().setOnMouseClicked(mouseEvent -> {
+        gameScene.getPauseMenu().getMenuButton().setOnMouseClicked(mouseEvent -> {
+            gameScene.toggleMenu(gameScene.getPauseMenu(), false);
             gameScene.resetGame();
-            gameScene.startTimer();
+            primaryStage.setScene(startScene);
         });
         gameScene.getEndMenu().getMenuButton().setOnMouseClicked(mouseEvent -> {
             gameScene.resetGame();
@@ -32,8 +32,6 @@ public class Main extends Application{
     }
     public static void main(String[] args) {
         launch(args);
-
-        ImageView image = new ImageView("desert.png");
         // write your code here
     }
 }

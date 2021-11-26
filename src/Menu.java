@@ -10,8 +10,8 @@ import javafx.scene.text.Text;
 public abstract class Menu{
 
     protected final Group layout;
-    private final double layoutWidth;
-    private final double layoutHeight;
+    protected final double layoutWidth;
+    protected final double layoutHeight;
 
     public Menu(double width, double height, Color bgColor) {
         layout = new Group();

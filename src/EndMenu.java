@@ -23,7 +23,7 @@ public class EndMenu extends Menu{
         Text text = new Text("You died !");
         text.setFont(new Font("Engravers MT", 35));
         text.setFill(Color.web("#353238"));
-        text.setX(center(text.getLayoutBounds().getWidth(), 300));
+        text.setX(center(text.getLayoutBounds().getWidth(), layoutWidth));
         text.setY(50);
         layout.getChildren().add(text);
         layout.setVisible(false);
